@@ -18,7 +18,7 @@ class SampleData: ObservableObject {
 }
 
 struct ContentView: View {
-    @StateObject private(set) var data: SampleData = .init()
+    @StateObject var data: SampleData = .init()
 
 	var body: some View {
         Text(data.text)
