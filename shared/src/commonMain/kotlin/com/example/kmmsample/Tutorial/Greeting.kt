@@ -1,5 +1,7 @@
-package com.example.kmmsample
+package com.example.kmmsample.Tutorial
 
+import com.example.kmmsample.Platform
+import com.example.kmmsample.getPlatform
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -37,6 +39,4 @@ class Greeting {
             })
         }
     }
-
-
 }
