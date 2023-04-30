@@ -13,16 +13,17 @@ import kotlinx.serialization.json.Json
 
 
 @Serializable
-data class SearchUser(
+data class SearchResult(
     @SerialName("total_count")
     val totalCount: Int,
     @SerialName("incomplete_results")
     val incompleteResults: String,
-    val items: List<Item>
+    @SerialName("items")
+    val users: List<User>
 )
 
 @Serializable
-data class Item(
+data class User(
     val login: String,
     @SerialName("avatar_url")
     val avatarUrl: String,
@@ -50,7 +51,7 @@ class GithubSearch {
     }
 
     @Throws(Exception::class)
-    suspend fun request(text: String): SearchUser {
+    suspend fun request(text: String): SearchResult {
         val query = Pair("q", text)
         val builder = createBuilder(query)
         val response = client.get(builder.build())
