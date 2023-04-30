@@ -1,7 +1,11 @@
+//
+//  TutorialView.swift
+//
+
 import SwiftUI
 import shared
 
-class SampleData: ObservableObject {
+class TutorialData: ObservableObject {
     @Published var text = "Loading..."
     
     func fetch() {
@@ -17,8 +21,8 @@ class SampleData: ObservableObject {
     }
 }
 
-struct ContentView: View {
-    @StateObject var data: SampleData = .init()
+struct TutorialView: View {
+    @StateObject var data: TutorialData = .init()
 
 	var body: some View {
         Text(data.text)
@@ -28,8 +32,8 @@ struct ContentView: View {
 	}
 }
 
-struct ContentView_Previews: PreviewProvider {
+struct TutorialView_Previews: PreviewProvider {
 	static var previews: some View {
-		ContentView()
+        TutorialView()
 	}
 }
