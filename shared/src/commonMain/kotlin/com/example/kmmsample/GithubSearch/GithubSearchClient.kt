@@ -41,7 +41,7 @@ class GithubSearch {
         }
     }
     private val baseUrl = "https://api.github.com/"
-    private val path = "search/repositories/"
+    private val path = "search/users/"
     private fun createBuilder(query: Pair<String, Any>): URLBuilder {
         val builder = URLBuilder(baseUrl)
         builder.path(path)
@@ -51,7 +51,7 @@ class GithubSearch {
 
     @Throws(Exception::class)
     suspend fun request(text: String): SearchUser {
-        val query = Pair("q", "text")
+        val query = Pair("q", text)
         val builder = createBuilder(query)
         val response = client.get(builder.build())
         return response.body()
