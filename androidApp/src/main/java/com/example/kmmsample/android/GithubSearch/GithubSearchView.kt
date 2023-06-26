@@ -1,7 +1,10 @@
 package com.example.kmmsample.android.GithubSearch
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,18 +16,25 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -37,6 +47,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class GithubSearchViewModel: ViewModel() {
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     private val _searchText = MutableStateFlow("")
     val searchText: StateFlow<String> = _searchText
 
@@ -46,45 +59,95 @@ class GithubSearchViewModel: ViewModel() {
     fun onSearchTextChanged(newText: String) {
         _searchText.value = newText
     }
+    private fun toggle() {
+        _isLoading.value = !_isLoading.value
+    }
 
     fun fetch() {
         viewModelScope.launch {
+            toggle()
             val result = GithubSearch().request(_searchText.value)
             _result.value = result
+            toggle()
         }
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun GithubSearchView(viewModel: GithubSearchViewModel = GithubSearchViewModel()) {
     val searchText by viewModel.searchText.collectAsState()
     val result by viewModel.result.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Search text field
-        OutlinedTextField(
-            value = searchText,
-            onValueChange = viewModel::onSearchTextChanged,
-            label = { Text("user name") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Ascii),
-            modifier = Modifier
-                .padding()
-                .fillMaxWidth()
-        )
-        Button(onClick = { viewModel.fetch() }) {
-            Text("Search")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
 
-        result?.let {
-            LazyColumn {
-                items(it.users) {
-                    UserCell(it)
-                    Divider()
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(8.dp).height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = viewModel::onSearchTextChanged,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        apply(
+                            viewModel,
+                            keyboardController,
+                            focusManager
+                        )
+                    })
+                )
+
+                Button(
+                    modifier = Modifier.fillMaxSize().padding(start = 8.dp),
+                    onClick = {
+                    apply(
+                        viewModel,
+                        keyboardController,
+                        focusManager
+                    )
+                }) {
+                    Text("Search")
                 }
             }
-        } ?: Text("検索ワードに一致するユーザーが存在しません。")
+
+            result?.let {
+                if (it.users.isEmpty()) {
+                    Text("検索ワードに一致するユーザーが存在しません。")
+                } else {
+                    LazyColumn {
+                        items(it.users) {
+                            UserCell(it)
+                            Divider()
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isLoading) {
+            CircularProgressIndicator()
+        }
     }
+}
+@OptIn(ExperimentalComposeUiApi::class)
+fun apply(
+    viewModel: GithubSearchViewModel,
+    keyboardController: SoftwareKeyboardController?,
+    focusManager: FocusManager
+) {
+    keyboardController?.hide()
+    focusManager.clearFocus()
+    viewModel.fetch()
 }
 
 @Composable
