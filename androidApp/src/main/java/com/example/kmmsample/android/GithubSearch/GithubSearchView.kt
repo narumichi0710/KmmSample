@@ -86,8 +86,6 @@ fun GithubSearchView(viewModel: GithubSearchViewModel = GithubSearchViewModel())
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-
-
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(8.dp).height(IntrinsicSize.Min),
@@ -97,6 +95,7 @@ fun GithubSearchView(viewModel: GithubSearchViewModel = GithubSearchViewModel())
                 OutlinedTextField(
                     value = searchText,
                     onValueChange = viewModel::onSearchTextChanged,
+                    singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {
                         apply(
@@ -122,7 +121,10 @@ fun GithubSearchView(viewModel: GithubSearchViewModel = GithubSearchViewModel())
 
             result?.let {
                 if (it.users.isEmpty()) {
-                    Text("検索ワードに一致するユーザーが存在しません。")
+                    Text(
+                        text = "検索ワードに一致するユーザーが存在しません。",
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
                 } else {
                     LazyColumn {
                         items(it.users) {
@@ -140,7 +142,7 @@ fun GithubSearchView(viewModel: GithubSearchViewModel = GithubSearchViewModel())
     }
 }
 @OptIn(ExperimentalComposeUiApi::class)
-fun apply(
+private fun apply(
     viewModel: GithubSearchViewModel,
     keyboardController: SoftwareKeyboardController?,
     focusManager: FocusManager
@@ -151,7 +153,7 @@ fun apply(
 }
 
 @Composable
-fun UserCell(user: User) {
+private fun UserCell(user: User) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
