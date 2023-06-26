@@ -17,7 +17,7 @@ data class SearchResult(
     @SerialName("total_count")
     val totalCount: Int,
     @SerialName("incomplete_results")
-    val incompleteResults: String,
+    val incompleteResults: Boolean,
     @SerialName("items")
     val users: List<User>
 )
@@ -42,7 +42,7 @@ class GithubSearch {
         }
     }
     private val baseUrl = "https://api.github.com/"
-    private val path = "search/users/"
+    private val path = "search/users"
     private fun createBuilder(query: Pair<String, Any>): URLBuilder {
         val builder = URLBuilder(baseUrl)
         builder.path(path)
